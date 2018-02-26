@@ -46,7 +46,10 @@ namespace TietotekniikkaProjekti.Controllers
         [HttpPost]
         public IActionResult Login(LoginModel login)
         {
-            Authenticate(login.Login, login.Password, "domaini");
+            if(Authenticate(login.Login, login.Password, "DC=ryhma1, DC = local") == true)
+            {
+                return View("Index");
+            }
             return View();
         }
         public static void Rename(string server,string userName, string password, string objectDn, string newName)
