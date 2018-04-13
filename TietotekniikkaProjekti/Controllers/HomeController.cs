@@ -8,7 +8,7 @@ namespace TietotekniikkaProjekti.Controllers
     [Authorize]//ota pois jos et halua kirjautua sisään kokoajan
     public class HomeController : Controller
     {
-
+        AdHelper adHelper = new AdHelper();
         public IActionResult Index(string UserName)
         {
             AdHelper adHelper = new AdHelper();
@@ -29,10 +29,9 @@ namespace TietotekniikkaProjekti.Controllers
             return View();
         }
 
-        public IActionResult About()
+        public IActionResult UsersList()
         {
-            ViewData["Message"] = "Your application description page.";
-
+            adHelper.GetAllUsers();
             return View();
         }
 

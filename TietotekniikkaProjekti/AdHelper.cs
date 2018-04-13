@@ -195,5 +195,46 @@ namespace TietotekniikkaProjekti
             }
 
         }
+    public void GetAllUsers()
+        {
+            List<UserModel> usersList = new List<UserModel>();
+
+            using (var context = new PrincipalContext(ContextType.Domain, "ryhma1.local"))
+            {
+                using (var searcher = new PrincipalSearcher(new UserPrincipal(context)))
+                {
+                    foreach (var result in searcher.FindAll())
+                    {
+                        UserModel userModel = new UserModel();
+                        DirectoryEntry de = result.GetUnderlyingObject() as DirectoryEntry;
+                        if (de.Properties["givenName"].Value != null && de.Properties["sn"].Value != null)
+                        {
+                            userModel.Nimi = de.Properties["givenName"].Value + " - " + de.Properties["sn"].Value;
+                            try
+                            {
+                                userModel.EmployeeType = de.Properties["MemberOf"].Value.ToString();
+                            }
+                            catch (System.NullReferenceException) { }
+                            try
+                            {
+                                userModel.Email = de.Properties["EmailAddress"].Value.ToString();
+                            }
+                            catch(System.NullReferenceException){ }
+                            try
+                            {
+                                userModel.Osoite = de.Properties["StreetAddress"].Value.ToString();
+                            }
+                            catch (System.NullReferenceException) { }
+                            try
+                            {
+                                userModel.Username = de.Properties["SamAccountName"].Value.ToString();
+                            }
+                            catch (System.NullReferenceException) { }
+                            usersList.Add(userModel);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
