@@ -4,8 +4,9 @@
     ViewData["Title"] = "AdminCreate";
 }
 
-<h2>AdminCreate</h2>
+<h2>Admin Create</h2>
 
+@ViewBag.data
 <h4>UserModel</h4>
 <hr />
 <div class="row">
@@ -13,8 +14,14 @@
         <form asp-action="AdminCreate">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <input type="hidden" asp-for="Id" class="form-control" />
-                <span asp-validation-for="Id" class="text-danger"></span>
+                <label asp-for="Username" class="control-label"></label>
+                <input asp-for="Username" class="form-control" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Nimi" class="control-label"></label>
@@ -30,11 +37,6 @@
                 <label asp-for="Email" class="control-label"></label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DisplayName" class="control-label"></label>
-                <input asp-for="DisplayName" class="form-control" />
-                <span asp-validation-for="DisplayName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EmployeeType" class="control-label"></label>

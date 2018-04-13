@@ -1,18 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TietotekniikkaProjekti.Models;
-using System.DirectoryServices;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TietotekniikkaProjekti.Controllers
 {
+    [Authorize]//ota pois jos et halua kirjautua sisään kokoajan
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        
+        public IActionResult Index(string UserName)
         {
+            AdHelper adHelper = new AdHelper();
+            string data =  adHelper.GetUserDetails(UserName);
+
+           // var data = adHelper.AttributeValuesSingleString("streetAddress", $" CN=Tapio Riihimäki, CN=Users, DC=ryhma1, DC=local ");
+            //CN = group, OU = GROUPS, DC = contoso, DC = com
+            ViewBag.VikkeOnHomo = data;
+
+
+            if (Request.Cookies["cookie"] != null)
+            {
+                var value = Request.Cookies["cookie"].ToString();
+                
+            }
+
             return View();
         }
 
@@ -34,42 +46,6 @@ namespace TietotekniikkaProjekti.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-        public IActionResult AdminCreate()
-        {
-            return View();
-        }
-        public IActionResult Login()
-        {
-           
-            return View();  
-        }
-        [HttpPost]
-        public IActionResult Login(LoginModel login)
-        {
-            if(Authenticate(login.Login, login.Password, "DC=ryhma1, DC = local") == true)
-            {
-                return View("Index");
-            }
-            return View();
-        }
-        public static void Rename(string server,string userName, string password, string objectDn, string newName)
-        {
-            DirectoryEntry child = new DirectoryEntry("LDAP://" + server + "/" +
-                objectDn, userName, password);
-            child.Rename("CN=" + newName);
-        }
-        private bool Authenticate(string userName, string password, string domain)
-        {
-            bool authentic = false;
-            try
-            {
-                DirectoryEntry entry = new DirectoryEntry("LDAP://" + domain,
-                    userName, password);
-                object nativeObject = entry.NativeObject;
-                authentic = true;
-            }
-            catch (DirectoryServicesCOMException) { }
-            return authentic;
-        }
+
     }
 }
