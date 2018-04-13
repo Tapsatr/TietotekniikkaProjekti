@@ -47,7 +47,7 @@ namespace TietotekniikkaProjekti
             return authentic;
         }
 
-        public string GetGroup(string username)
+        public ArrayList GetGroup(string username)
         {
 
             string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
@@ -62,39 +62,27 @@ namespace TietotekniikkaProjekti
 
             var result = searcher.FindOne();//put result if found
             DirectoryEntry de = null;
-            string data = "";
+            ArrayList data = new ArrayList();
+            int i = 0;
             if (null != result)
             {
                 de = result.GetDirectoryEntry();
 
                 if (de.Properties["memberOf"].Value != null)
                 {
-                    var data2 = de.Properties["memberOf"].Value;
-        
-                    data = "memberOf " + de.Properties["memberOf"].Value.ToString();
-                    
-                }
 
-
-
-
-                /*
-                Console.WriteLine($"Found: {result.Path}");
-               // ViewBag.data = result.Path;
-
-                foreach (var item in de.Properties.PropertyNames)
-                {
-                    //Console.Write($"\n{item}");
-                    //ViewBag.data += $"\n{item}";
-                    data += $"\n{item}";
-                    foreach (var val in de.Properties[item.ToString()])
+                    foreach (var val in de.Properties["memberOf"])
                     {
-                        // Console.Write($"\n{val}");
-                        //ViewBag.data += $"\n{val}";
-                        data += $"\n{val}";
+                        data[i] = val.ToString();
+                        i++;
                     }
+
+                    var data2 = de.Properties["memberOf"].Value;
+
+                    //  data = "memberOf " + de.Properties["memberOf"].Value.ToString();
+
                 }
-                */
+
             }
 
             searcher.Dispose();
