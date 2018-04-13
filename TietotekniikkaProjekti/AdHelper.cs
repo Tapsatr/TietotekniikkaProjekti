@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
@@ -45,7 +46,8 @@ namespace TietotekniikkaProjekti
             catch (DirectoryServicesCOMException) { }
             return authentic;
         }
-        public string GetUserDetails(string username)
+
+        public string GetGroup(string username)
         {
 
             string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
@@ -65,16 +67,14 @@ namespace TietotekniikkaProjekti
             {
                 de = result.GetDirectoryEntry();
 
-                if (de.Properties["streetAddress"].Value != null)
+                if (de.Properties["memberOf"].Value != null)
                 {
-                    data = "Street Address: " + de.Properties["streetAddress"].Value.ToString();
+                    var data2 = de.Properties["memberOf"].Value;
+        
+                    data = "memberOf " + de.Properties["memberOf"].Value.ToString();
+                    
                 }
-                if (de.Properties["mail"].Value != null)
-                {
-                    data += "Email: " + de.Properties["mail"].Value.ToString();
-                }
-                data += "Display Name: " + de.Properties["displayName"].Value.ToString();
-                data += "UserName: " + de.Properties["sAMAccountName"].Value.ToString()+"\n\n";
+
 
 
 
@@ -95,6 +95,63 @@ namespace TietotekniikkaProjekti
                     }
                 }
                 */
+            }
+
+            searcher.Dispose();
+            directory.Dispose();
+            return data;
+        }
+
+        public string GetUserDetails(string username)
+        {
+
+            string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
+
+            Console.WriteLine($"Searching {username}");
+
+            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local");//LDAP polku
+            directory.AuthenticationType = AuthenticationTypes.Secure;
+
+            DirectorySearcher searcher = new DirectorySearcher(directory, filter);
+            searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
+
+            var result = searcher.FindOne();//put result if found
+            DirectoryEntry de = null;
+            string data = "";
+            if (null != result)
+            {
+                de = result.GetDirectoryEntry();
+
+                //if (de.Properties["streetAddress"].Value != null)
+                //{
+                //    data = "Street Address: " + de.Properties["streetAddress"].Value.ToString();
+                //}
+                //if (de.Properties["mail"].Value != null)
+                //{
+                //    data += "Email: " + de.Properties["mail"].Value.ToString();
+                //}
+                //data += "Display Name: " + de.Properties["displayName"].Value.ToString();
+                //data += "UserName: " + de.Properties["sAMAccountName"].Value.ToString()+"\n\n";
+
+
+
+                
+                Console.WriteLine($"Found: {result.Path}");
+               // ViewBag.data = result.Path;
+
+                foreach (var item in de.Properties.PropertyNames)
+                {
+                    //Console.Write($"\n{item}");
+                    //ViewBag.data += $"\n{item}";
+                    data += $"\n{item}";
+                    foreach (var val in de.Properties[item.ToString()])
+                    {
+                        // Console.Write($"\n{val}");
+                        //ViewBag.data += $"\n{val}";
+                        data += $"\n{val}";
+                    }
+                }
+                
             }
           
             searcher.Dispose();

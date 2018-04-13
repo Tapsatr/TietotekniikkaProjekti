@@ -25,10 +25,15 @@ namespace TietotekniikkaProjekti.Controllers
             if (!adHelper.Authenticate(loginModel.UserName, loginModel.Password))
                 return View();
 
+            
+
+          
+
             // create claims
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, loginModel.UserName)
+                new Claim(ClaimTypes.Name, loginModel.UserName),
+
             };
 
             // create identity

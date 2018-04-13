@@ -8,12 +8,12 @@ using TietotekniikkaProjekti.Models;
 
 namespace TietotekniikkaProjekti.Controllers
 {
-    [Authorize(Roles="Administrators")]
+    [Authorize(Roles="Administrator")]
     public class AdminController : Controller
     {
         public IActionResult Index()
         {
-            return View();
+            return View();  
         }
         public IActionResult AdminCreate()
         {

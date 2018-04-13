@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,5 +13,7 @@ namespace TietotekniikkaProjekti.Models
         public string UserName { get; set; }
         [Required]
         public string Password { get; set; }
+
+        public ArrayList Type { get; set; }
     }
 }

@@ -8,15 +8,16 @@ namespace TietotekniikkaProjekti.Controllers
     [Authorize]//ota pois jos et halua kirjautua sisään kokoajan
     public class HomeController : Controller
     {
-        
+
         public IActionResult Index(string UserName)
         {
             AdHelper adHelper = new AdHelper();
-            string data =  adHelper.GetUserDetails(UserName);
+             string data =  adHelper.GetUserDetails(UserName);
 
-           // var data = adHelper.AttributeValuesSingleString("streetAddress", $" CN=Tapio Riihimäki, CN=Users, DC=ryhma1, DC=local ");
+            // var data = adHelper.AttributeValuesSingleString("streetAddress", $" CN=Tapio Riihimäki, CN=Users, DC=ryhma1, DC=local ");
             //CN = group, OU = GROUPS, DC = contoso, DC = com
-            ViewBag.VikkeOnHomo = data;
+            var data2 = adHelper.GetGroup(UserName);
+            ViewBag.VikkeOnHomo = data2;
 
 
             if (Request.Cookies["cookie"] != null)
