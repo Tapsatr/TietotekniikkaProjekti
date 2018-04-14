@@ -1,6 +1,55 @@
-﻿@{
+﻿@model TietotekniikkaProjekti.Models.UserModel
+@{
     ViewData["Title"] = "Home Page";
 }
-@ViewBag.VikkeOnHomo
+@ViewBag.VikkeGay
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Username)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nimi)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sukunimi)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Osoite)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EmployeeType)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                @Html.DisplayFor(model => model.Username)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Nimi)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Sukunimi)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Osoite)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.EmployeeType)
+            </td>
+        </tr>
+    </tbody>
+</table>
+
 
 

@@ -38,6 +38,8 @@ namespace TietotekniikkaProjekti.Controllers
         }
         public IActionResult UsersList()
         {
+            ViewBag.Success = TempData["Success"];
+
             List<UserModel> usersList = adHelper.GetAllUsers();// haetaan lista käyttäjistä
             HttpContext.Session.Set("usersListSession", usersList);//tallennetaan lista sessioon
             return View(usersList);
@@ -56,7 +58,7 @@ namespace TietotekniikkaProjekti.Controllers
         public IActionResult EditUser(UserModel user)
         {
             //User.IsInRole("Administrator");
-            adHelper.EditUser(user);
+            TempData["Success"] = adHelper.EditUser(user);
             return Redirect("UsersList");
         }
         public IActionResult Error()

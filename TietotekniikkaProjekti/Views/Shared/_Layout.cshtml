@@ -30,9 +30,14 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    @if(User.IsInRole("Administrator"))
+                    @if (User.IsInRole("Administrator"))
                     {
-                        <li><a asp-area="" asp-controller="Admin" asp-action="UsersList">Users</a></li>
+                        <li><a asp-controller="Admin" asp-action="UsersList">Users</a></li>
+                    }
+                    @if (User.Claims.Any())
+                    {
+                        <li><a asp-controller="Home" asp-action="Edit">Edit your info</a></li>
+                        <li><a asp-controller="Account" asp-action="LogOut">Log Out</a></li>
                     }
                 </ul>
             </div>

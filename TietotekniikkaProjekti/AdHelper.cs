@@ -49,48 +49,6 @@ namespace TietotekniikkaProjekti
             return authentic;
         }
 
-        public ArrayList GetGroup(string username)// ei käytössä
-        {
-
-            string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
-
-            Console.WriteLine($"Searching {username}");
-
-            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local");//LDAP polku
-            directory.AuthenticationType = AuthenticationTypes.Secure;
-
-            DirectorySearcher searcher = new DirectorySearcher(directory, filter);
-            searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
-
-            var result = searcher.FindOne();//put result if found
-            DirectoryEntry de = null;
-            ArrayList data = new ArrayList();
-     
-            if (null != result)
-            {
-                de = result.GetDirectoryEntry();
-
-                if (de.Properties["memberOf"].Value != null)
-                {
-
-                    foreach (var val in de.Properties["memberOf"])
-                    {
-                        data.Add(val);
-           
-                    }
-
-                    var data2 = de.Properties["memberOf"].Value;
-
-                    //  data = "memberOf " + de.Properties["memberOf"].Value.ToString();
-
-                }
-
-            }
-
-            searcher.Dispose();
-            directory.Dispose();
-            return data;
-        }
         public bool isAdmin(string username)
         {
 
@@ -115,7 +73,7 @@ namespace TietotekniikkaProjekti
             }
             return false;
         }
-        public string GetUserDetails(string username)
+        public UserModel GetUserDetails(string username)
         {
 
             string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
@@ -130,46 +88,44 @@ namespace TietotekniikkaProjekti
 
             var result = searcher.FindOne();//put result if found
             DirectoryEntry de = null;
-            string data = "";
+            UserModel userModel = new UserModel();
             if (null != result)
             {
                 de = result.GetDirectoryEntry();
 
-                //if (de.Properties["streetAddress"].Value != null)
-                //{
-                //    data = "Street Address: " + de.Properties["streetAddress"].Value.ToString();
-                //}
-                //if (de.Properties["mail"].Value != null)
-                //{
-                //    data += "Email: " + de.Properties["mail"].Value.ToString();
-                //}
-                //data += "Display Name: " + de.Properties["displayName"].Value.ToString();
-                //data += "UserName: " + de.Properties["sAMAccountName"].Value.ToString()+"\n\n";
-
-
-
+                userModel.Osoite = (de.Properties["StreetAddress"].Value ?? "Not found").ToString();
+                userModel.Email = (de.Properties["mail"].Value ?? "Not found").ToString();
+                userModel.EmployeeType = (de.Properties["employeeType"].Value ?? "Not found").ToString();
+                userModel.Nimi = (de.Properties["givenName"].Value ?? "Not found").ToString();
+                userModel.Sukunimi = (de.Properties["sn"].Value ?? "Not found").ToString();
+                userModel.Username = de.Properties["sAMAccountName"].Value.ToString();
+               
                 
-                Console.WriteLine($"Found: {result.Path}");
-               // ViewBag.data = result.Path;
 
-                foreach (var item in de.Properties.PropertyNames)
-                {
-                    //Console.Write($"\n{item}");
-                    //ViewBag.data += $"\n{item}";
-                    data += $"\n{item}";
-                    foreach (var val in de.Properties[item.ToString()])
-                    {
-                        // Console.Write($"\n{val}");
-                        //ViewBag.data += $"\n{val}";
-                        data += $"\n{val}";
-                    }
-                }
-                
+
+
+
+                // ViewBag.data = result.Path;
+                /*
+                 foreach (var item in de.Properties.PropertyNames)
+                 {
+                     //Console.Write($"\n{item}");
+                     //ViewBag.data += $"\n{item}";
+                     data += $"\n{item}";
+                     foreach (var val in de.Properties[item.ToString()])
+                     {
+                         // Console.Write($"\n{val}");
+                         //ViewBag.data += $"\n{val}";
+                         data += $"\n{val}";
+                     }
+                 }
+                 */
+
             }
           
             searcher.Dispose();
             directory.Dispose();
-            return data;
+            return userModel;
         }
         public string AttributeValuesSingleString(string attributeName, string objectDn)
         {
@@ -219,7 +175,7 @@ namespace TietotekniikkaProjekti
     public List<UserModel> GetAllUsers()
         {
             List<UserModel> usersList = new List<UserModel>();
-
+            
             using (var context = new PrincipalContext(ContextType.Domain, "ryhma1.local"))
             {
                 using (var searcher = new PrincipalSearcher(new UserPrincipal(context)))
@@ -230,41 +186,13 @@ namespace TietotekniikkaProjekti
                         DirectoryEntry de = result.GetUnderlyingObject() as DirectoryEntry;
                         if (de.Properties["givenName"].Value != null && de.Properties["sn"].Value != null)
                         {
-                            try
-                            {
-                                userModel.Sukunimi = de.Properties["sn"].Value.ToString();
-                            }
-                            catch (System.NullReferenceException) { }
-                            try
-                            {
-                                userModel.Nimi = de.Properties["givenName"].Value.ToString();
-                            }
-                            catch (System.NullReferenceException) { }
-                            try
-                            {
-                                userModel.Group = de.Properties["MemberOf"].Value.ToString();
-                            }
-                            catch (System.NullReferenceException) { }
-                            try
-                            {
-                                userModel.Email = de.Properties["mail"].Value.ToString();
-                            }
-                            catch(System.NullReferenceException){ }
-                            try
-                            {
-                                userModel.Osoite = de.Properties["StreetAddress"].Value.ToString();
-                            }
-                            catch (System.NullReferenceException) { }
-                            try
-                            {
-                                userModel.Username = de.Properties["SamAccountName"].Value.ToString();
-                            }
-                            catch (System.NullReferenceException) { }
-                            try
-                            {
-                                userModel.EmployeeType = de.Properties["employeeType"].Value.ToString();
-                            }
-                            catch (System.NullReferenceException) { }
+                            userModel.Sukunimi = (de.Properties["sn"].Value ?? "Not found").ToString();
+                            userModel.Nimi = (de.Properties["givenName"].Value ?? "Not found").ToString();
+                            userModel.Group = (de.Properties["MemberOf"].Value ?? "Not found").ToString();
+                            userModel.Email = (de.Properties["mail"].Value ?? "Not found").ToString();
+                            userModel.Osoite = (de.Properties["StreetAddress"].Value ?? "Not found").ToString();
+                            userModel.Username = de.Properties["SamAccountName"].Value.ToString();
+                            userModel.EmployeeType = (de.Properties["employeeType"].Value ?? "Not found").ToString();
                             userModel.Enabled = IsActive(de);
 
                             usersList.Add(userModel);
@@ -274,59 +202,41 @@ namespace TietotekniikkaProjekti
             }
             return usersList;
         }
-        public void EditUser(UserModel user)
+        public string EditUser(UserModel user)
         {
-            string filter = $"(&(objectClass=user)(sAMAccountName={user.Username}))";
-
-            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
-            directory.AuthenticationType = AuthenticationTypes.Secure;
-
-            DirectorySearcher searcher = new DirectorySearcher(directory, filter);
-            searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
-
-            var result = searcher.FindOne();//put result if found
-            DirectoryEntry de = null;
-
-            if (null != result)
+            try
             {
-                de = result.GetDirectoryEntry();
-                try
-                {
-                    de.Properties["givenName"].Value = user.Nimi;
-                }
-                catch (Exception e) { }
-                try
-                {
-                    de.Properties["sn"].Value = user.Sukunimi;
-                }
-                catch (Exception e) { }
-                /*try
-                {
-                    de.Properties["SamAccountName"].Add(user.Username);
-                }
-                catch (Exception e) { }*/
-                try
-                {
-                    de.Properties["mail"].Value = user.Email;
-                }
-                catch (Exception e) { }
-                try
-                {
-                    de.Properties["StreetAddress"].Value = user.Osoite;
-                }
-                catch (Exception e) { }
-                try
-                {
-                    de.Properties["employeeType"].Value = user.EmployeeType;
-                }
-                catch (Exception e) { }
-                //de.Properties["MemberOf"].Add(user.Group); 
-                de.CommitChanges();
-                
-            }
+                string filter = $"(&(objectClass=user)(sAMAccountName={user.Username}))";
 
-            searcher.Dispose();
-            directory.Dispose();
+                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
+                directory.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectorySearcher searcher = new DirectorySearcher(directory, filter);
+                searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
+
+                var result = searcher.FindOne();//put result if found
+                DirectoryEntry de = null;
+
+                if (null != result)
+                {
+                    de = result.GetDirectoryEntry();
+                    de.Properties["givenName"].Value = user.Nimi;
+                    de.Properties["sn"].Value = user.Sukunimi;
+                    de.Properties["mail"].Value = user.Email;
+                    de.Properties["StreetAddress"].Value = user.Osoite;
+                    de.Properties["employeeType"].Value = user.EmployeeType;
+                    //de.Properties["MemberOf"].Add(user.Group); 
+                    de.CommitChanges();
+                }
+
+                searcher.Dispose();
+                directory.Dispose();
+                return "Succesfully edited user";
+            }
+            catch (System.DirectoryServices.DirectoryServicesCOMException ex)
+            {
+                return "Failed to edit!";
+            }
         }
         private bool IsActive(DirectoryEntry de)
         {
@@ -335,6 +245,42 @@ namespace TietotekniikkaProjekti
             int flags = (int)de.Properties["userAccountControl"].Value;
 
             return !Convert.ToBoolean(flags & 0x0002);
+        }
+
+        public bool IsHR(string username)
+        {
+
+            string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
+
+            Console.WriteLine($"Searching {username}");
+
+            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local");//LDAP polku
+            directory.AuthenticationType = AuthenticationTypes.Secure;
+
+            DirectorySearcher searcher = new DirectorySearcher(directory, filter);
+            searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
+
+            var result = searcher.FindOne();//put result if found
+            DirectoryEntry de = null;
+            if (null != result)
+            {
+                de = result.GetDirectoryEntry();
+
+                if (de.Properties["employeeType"].Value != null)
+                {
+                    if (de.Properties["employeeType"].Value.Equals("HR"))
+                    {
+                        searcher.Dispose();
+                        directory.Dispose();
+                        return true;
+                    }
+                }
+
+            }
+
+            searcher.Dispose();
+            directory.Dispose();
+            return false;
         }
     }
 }
