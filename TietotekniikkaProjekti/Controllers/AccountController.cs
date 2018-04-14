@@ -27,14 +27,14 @@ namespace TietotekniikkaProjekti.Controllers
 
 
 
-            string role = "";
+            string role = "User";
             if (adHelper.isAdmin(loginModel.UserName))
             {
                 role = "Administrator";
             }
-            else
+            else if (adHelper.IsHR(loginModel.UserName))
             {
-                role = "User";
+                role = "HR";
             }
             // create claims
             List<Claim> claims = new List<Claim>

@@ -10,34 +10,33 @@ using System.Security.Claims;
 
 namespace TietotekniikkaProjekti.Controllers
 {
-    [Authorize]//ota pois jos et halua kirjautua sisään kokoajan
+    [Authorize]
     public class HomeController : Controller
     {
         AdHelper adHelper = new AdHelper();
         public IActionResult Index(string UserName)
         {
-            AdHelper adHelper = new AdHelper();
-            string data = adHelper.GetUserDetails(UserName);
-
-            // var data = adHelper.AttributeValuesSingleString("streetAddress", $" CN=Tapio Riihimäki, CN=Users, DC=ryhma1, DC=local ");
-            //CN = group, OU = GROUPS, DC = contoso, DC = com
-            var data2 = adHelper.GetGroup(UserName);
-            string gay = "";
-            foreach (var val in data2)
+            var identity = (ClaimsIdentity)User.Identity;
+            ViewBag.VikkeGay = TempData["vikegay"];
+            if (identity.Name!=null)
             {
-                gay += val;
-            }
-            ViewBag.VikkeOnHomo = gay;
-
-
-            if (Request.Cookies["cookie"] != null)
-            {
-                var value = Request.Cookies["cookie"].ToString();
-
+                UserName = identity.Name;
             }
 
+            UserModel VikkeOnHomo = adHelper.GetUserDetails(UserName);
+            return View(VikkeOnHomo);
+        }
+        public IActionResult Edit()
+        {
             return View();
         }
-
+        [HttpPost]
+        public IActionResult Edit(UserModel user)
+        {
+            user.Username = User.Identity.Name;
+            TempData["vikegay"] = adHelper.EditUser(user);
+           
+            return Redirect("Index");
+        }
     }
 }
