@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using TietotekniikkaProjekti.Extensions;
 using System.Linq;
+using System.Security.Claims;
 
 namespace TietotekniikkaProjekti.Controllers
 {
@@ -62,7 +63,10 @@ namespace TietotekniikkaProjekti.Controllers
         [HttpPost]
         public IActionResult EditUser(UserModel user)
         {
-            adHelper.EditUser(user);
+            var identity = (ClaimsIdentity)User.Identity;
+            IEnumerable<Claim> claims = identity.Claims;
+           
+            //adHelper.EditUser(user, currentUser);
             return View("UsersList");
         }
         public IActionResult Error()

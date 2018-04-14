@@ -33,6 +33,8 @@ namespace TietotekniikkaProjekti.Controllers
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, loginModel.UserName),
+                /*new Claim(ClaimTypes.Role, "Administrator"),*/
+                new Claim(ClaimTypes.Surname, loginModel.Password)
 
             };
 

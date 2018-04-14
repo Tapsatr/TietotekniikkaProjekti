@@ -229,7 +229,7 @@ namespace TietotekniikkaProjekti
             }
             return usersList;
         }
-        public void EditUser(UserModel user)
+        public void EditUser(UserModel user, LoginModel currentUser)
         {
             string stringDomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
             PrincipalContext PrincipalContext4 = new PrincipalContext(ContextType.Domain, stringDomainName,
