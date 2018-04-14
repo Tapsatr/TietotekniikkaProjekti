@@ -29,6 +29,11 @@
                 <span asp-validation-for="Nimi" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Sukunimi" class="control-label"></label>
+                <input asp-for="Sukunimi" class="form-control" />
+                <span asp-validation-for="Sukunimi" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="Osoite" class="control-label"></label>
                 <input asp-for="Osoite" class="form-control" />
                 <span asp-validation-for="Osoite" class="text-danger"></span>
@@ -40,7 +45,10 @@
             </div>
             <div class="form-group">
                 <label asp-for="EmployeeType" class="control-label"></label>
-                <input asp-for="EmployeeType" class="form-control" />
+                <select asp-for="EmployeeType" class="form-control">
+                    <option>HR</option>
+                    <option>Tavallinen</option>
+                </select>
                 <span asp-validation-for="EmployeeType" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -51,7 +59,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="UsersList">Back to List</a>
 </div>
 
 @section Scripts {

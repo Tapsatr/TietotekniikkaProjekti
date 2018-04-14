@@ -18,9 +18,15 @@ namespace TietotekniikkaProjekti.Models
         public string Password { get; set; }
         [Required]
         public string Nimi { get; set; }
+        [Required]
+        public string Sukunimi { get; set; }
+        [Required]
         public string Osoite { get; set; }
+        [Required]
         public string Email { get; set; }
+        [Required]
         public string EmployeeType { get; set; }
+        public string Group { get; set; }
         public bool Enabled { get; set; }
     }
 }

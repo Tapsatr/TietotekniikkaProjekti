@@ -49,7 +49,7 @@ namespace TietotekniikkaProjekti
             return authentic;
         }
 
-        public ArrayList GetGroup(string username)
+        public ArrayList GetGroup(string username)// ei käytössä
         {
 
             string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
@@ -91,7 +91,30 @@ namespace TietotekniikkaProjekti
             directory.Dispose();
             return data;
         }
+        public bool isAdmin(string username)
+        {
 
+            string stringDomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
+            // set up domain context
+            PrincipalContext ctx = new PrincipalContext(ContextType.Domain, stringDomainName);
+
+            // find a user
+            UserPrincipal user = UserPrincipal.FindByIdentity(ctx, username);
+
+            // find the group in question
+            GroupPrincipal group = GroupPrincipal.FindByIdentity(ctx, "Administrators");
+
+            if (user != null)
+            {
+                // check if user is member of that group
+                if (user.IsMemberOf(group))
+                {
+                    return true;
+                    // do something.....
+                }
+            }
+            return false;
+        }
         public string GetUserDetails(string username)
         {
 
@@ -161,27 +184,35 @@ namespace TietotekniikkaProjekti
         {
             try
             {
-                string stringDomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
-                PrincipalContext PrincipalContext4 = new PrincipalContext(ContextType.Domain, stringDomainName,
-                  LDAP_PATH, ContextOptions.SimpleBind, @"ryhma1\Administrator", ADMIN_PASSWORD);
-                UserPrincipal UserPrincipal1 = new UserPrincipal(PrincipalContext4,
-                  user.Username, user.Password, true);
+   
+                DirectoryEntry directory = new DirectoryEntry("LDAP://CN=Users,DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
+                directory.AuthenticationType = AuthenticationTypes.Secure;
 
-                //User Logon Name
-                UserPrincipal1.UserPrincipalName = user.Username;
-                UserPrincipal1.Name = user.Nimi;
-                UserPrincipal1.GivenName = user.Username;
-                UserPrincipal1.DisplayName = user.Nimi;
-                UserPrincipal1.EmailAddress = user.Email;
-                UserPrincipal1.Save();
+                DirectoryEntry newUser = directory.Children.Add
+                ("CN=" + user.Username, "user");
+                newUser.Properties["displayName"].Add(user.Username);
+                newUser.Properties["userPrincipalName"].Add(user.Username + "@RYHMA1.LOCAL");
+                newUser.Properties["samAccountName"].Value = user.Username;
+                newUser.Properties["givenName"].Value = user.Nimi;
+                newUser.Properties["sn"].Value = user.Sukunimi;
+                newUser.Properties["mail"].Value = user.Email;
+                newUser.Properties["StreetAddress"].Value = user.Osoite;
+                newUser.Properties["employeeType"].Value = user.EmployeeType;
 
-                UserPrincipal1.Enabled = true;
+                newUser.CommitChanges();
+
+
+                newUser.Invoke("SetPassword", new object[] { user.Password });
+                newUser.CommitChanges();
+                directory.Close();
+                newUser.Close();
+
                 return "Succesfully created user";
             }
-            catch (Exception ex)
+            catch (System.DirectoryServices.DirectoryServicesCOMException ex)
             {
                 
-                return ex.ToString();
+                return "Failed to create!";
             }
 
         }
@@ -199,15 +230,24 @@ namespace TietotekniikkaProjekti
                         DirectoryEntry de = result.GetUnderlyingObject() as DirectoryEntry;
                         if (de.Properties["givenName"].Value != null && de.Properties["sn"].Value != null)
                         {
-                            userModel.Nimi = de.Properties["givenName"].Value + " - " + de.Properties["sn"].Value;
                             try
                             {
-                                userModel.EmployeeType = de.Properties["MemberOf"].Value.ToString();
+                                userModel.Sukunimi = de.Properties["sn"].Value.ToString();
                             }
                             catch (System.NullReferenceException) { }
                             try
                             {
-                                userModel.Email = de.Properties["EmailAddress"].Value.ToString();
+                                userModel.Nimi = de.Properties["givenName"].Value.ToString();
+                            }
+                            catch (System.NullReferenceException) { }
+                            try
+                            {
+                                userModel.Group = de.Properties["MemberOf"].Value.ToString();
+                            }
+                            catch (System.NullReferenceException) { }
+                            try
+                            {
+                                userModel.Email = de.Properties["mail"].Value.ToString();
                             }
                             catch(System.NullReferenceException){ }
                             try
@@ -218,6 +258,11 @@ namespace TietotekniikkaProjekti
                             try
                             {
                                 userModel.Username = de.Properties["SamAccountName"].Value.ToString();
+                            }
+                            catch (System.NullReferenceException) { }
+                            try
+                            {
+                                userModel.EmployeeType = de.Properties["employeeType"].Value.ToString();
                             }
                             catch (System.NullReferenceException) { }
                             userModel.Enabled = IsActive(de);
@@ -231,19 +276,57 @@ namespace TietotekniikkaProjekti
         }
         public void EditUser(UserModel user)
         {
-            string stringDomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
-            PrincipalContext PrincipalContext4 = new PrincipalContext(ContextType.Domain, stringDomainName,
-            LDAP_PATH, ContextOptions.SimpleBind, @"ryhma1\Administrator", ADMIN_PASSWORD);
-            using (var context = new PrincipalContext(ContextType.Domain, "ryhma1.local"))
+            string filter = $"(&(objectClass=user)(sAMAccountName={user.Username}))";
+
+            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
+            directory.AuthenticationType = AuthenticationTypes.Secure;
+
+            DirectorySearcher searcher = new DirectorySearcher(directory, filter);
+            searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
+
+            var result = searcher.FindOne();//put result if found
+            DirectoryEntry de = null;
+
+            if (null != result)
             {
-                UserPrincipal userPrincipal = UserPrincipal.FindByIdentity
-                (context, user.Username);
-
-                userPrincipal.GivenName = user.Nimi;
-
-                userPrincipal.Save();
+                de = result.GetDirectoryEntry();
+                try
+                {
+                    de.Properties["givenName"].Value = user.Nimi;
+                }
+                catch (Exception e) { }
+                try
+                {
+                    de.Properties["sn"].Value = user.Sukunimi;
+                }
+                catch (Exception e) { }
+                /*try
+                {
+                    de.Properties["SamAccountName"].Add(user.Username);
+                }
+                catch (Exception e) { }*/
+                try
+                {
+                    de.Properties["mail"].Value = user.Email;
+                }
+                catch (Exception e) { }
+                try
+                {
+                    de.Properties["StreetAddress"].Value = user.Osoite;
+                }
+                catch (Exception e) { }
+                try
+                {
+                    de.Properties["employeeType"].Value = user.EmployeeType;
+                }
+                catch (Exception e) { }
+                //de.Properties["MemberOf"].Add(user.Group); 
+                de.CommitChanges();
+                
             }
-            
+
+            searcher.Dispose();
+            directory.Dispose();
         }
         private bool IsActive(DirectoryEntry de)
         {
