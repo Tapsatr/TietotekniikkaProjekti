@@ -21,5 +21,6 @@ namespace TietotekniikkaProjekti.Models
         public string Osoite { get; set; }
         public string Email { get; set; }
         public string EmployeeType { get; set; }
+        public bool Enabled { get; set; }
     }
 }

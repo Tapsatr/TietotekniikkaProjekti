@@ -27,7 +27,7 @@ namespace TietotekniikkaProjekti.Controllers
             //adHelper.CreateUserAccount("DC=ryhma1,DC=local", user);
             //adHelper.AddToGroup("CN=user, OU=USERS, DC=ryhma1, DC=local ", "CN=group,OU=GROUPS,DC=ryhma1,DC=local");
 
-            var success = adHelper.CreateUser("CN=Users,DC=ryhma1,DC=local", user);
+            var success = adHelper.CreateUser(user);
           
 
             ViewBag.data = success;

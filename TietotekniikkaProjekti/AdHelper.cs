@@ -11,6 +11,8 @@ namespace TietotekniikkaProjekti
 {
     public class AdHelper
     {
+        private const string ADMIN_PASSWORD = "Qwerty12";
+        private const string LDAP_PATH = "CN=Users,DC=ryhma1,DC=local";
         public void AddToGroup(string userDn, string groupDn)
         {
             try
@@ -63,7 +65,7 @@ namespace TietotekniikkaProjekti
             var result = searcher.FindOne();//put result if found
             DirectoryEntry de = null;
             ArrayList data = new ArrayList();
-            int i = 0;
+     
             if (null != result)
             {
                 de = result.GetDirectoryEntry();
@@ -73,8 +75,8 @@ namespace TietotekniikkaProjekti
 
                     foreach (var val in de.Properties["memberOf"])
                     {
-                        data[i] = val.ToString();
-                        i++;
+                        data.Add(val);
+           
                     }
 
                     var data2 = de.Properties["memberOf"].Value;
@@ -155,13 +157,13 @@ namespace TietotekniikkaProjekti
             ent.Dispose();
             return strValue;
         }
-        public string CreateUser(string ldapPath, UserModel user)
+        public string CreateUser(UserModel user)
         {
             try
             {
                 string stringDomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
                 PrincipalContext PrincipalContext4 = new PrincipalContext(ContextType.Domain, stringDomainName,
-                  ldapPath, ContextOptions.SimpleBind, @"ryhma1\Administrator", "Qwerty1");
+                  LDAP_PATH, ContextOptions.SimpleBind, @"ryhma1\Administrator", ADMIN_PASSWORD);
                 UserPrincipal UserPrincipal1 = new UserPrincipal(PrincipalContext4,
                   user.Username, user.Password, true);
 
@@ -183,7 +185,7 @@ namespace TietotekniikkaProjekti
             }
 
         }
-    public void GetAllUsers()
+    public List<UserModel> GetAllUsers()
         {
             List<UserModel> usersList = new List<UserModel>();
 
@@ -218,11 +220,38 @@ namespace TietotekniikkaProjekti
                                 userModel.Username = de.Properties["SamAccountName"].Value.ToString();
                             }
                             catch (System.NullReferenceException) { }
+                            userModel.Enabled = IsActive(de);
+
                             usersList.Add(userModel);
                         }
                     }
                 }
             }
+            return usersList;
+        }
+        public void EditUser(UserModel user)
+        {
+            string stringDomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
+            PrincipalContext PrincipalContext4 = new PrincipalContext(ContextType.Domain, stringDomainName,
+            LDAP_PATH, ContextOptions.SimpleBind, @"ryhma1\Administrator", ADMIN_PASSWORD);
+            using (var context = new PrincipalContext(ContextType.Domain, "ryhma1.local"))
+            {
+                UserPrincipal userPrincipal = UserPrincipal.FindByIdentity
+                (context, user.Username);
+
+                userPrincipal.GivenName = user.Nimi;
+
+                userPrincipal.Save();
+            }
+            
+        }
+        private bool IsActive(DirectoryEntry de)
+        {
+            if (de.NativeGuid == null) return false;
+
+            int flags = (int)de.Properties["userAccountControl"].Value;
+
+            return !Convert.ToBoolean(flags & 0x0002);
         }
     }
 }
