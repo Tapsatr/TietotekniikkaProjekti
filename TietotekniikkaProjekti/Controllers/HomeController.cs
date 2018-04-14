@@ -39,40 +39,5 @@ namespace TietotekniikkaProjekti.Controllers
             return View();
         }
 
-        public IActionResult UsersList()
-        {
-            List<UserModel> usersList= adHelper.GetAllUsers();// haetaan lista käyttäjistä
-            HttpContext.Session.Set("usersListSession", usersList);//tallennetaan lista sessioon
-            return View(usersList);
-        }
-
-        public IActionResult AddUser()
-        {
-
-            return View();
-        }
-        [HttpGet]
-        public IActionResult EditUser(string username)
-        {
-           List<UserModel> usersList = HttpContext.Session.Get<List<UserModel>>("usersListSession") as List<UserModel>;//otetaan lista sessiosta
-            //etsitään käyttäjä listasta ja palautetaan edit viewiin
-            UserModel userModel = new UserModel();
-            userModel = usersList.Find(s => s.Username == username);
-            return View(userModel);
-        }
-        [HttpPost]
-        public IActionResult EditUser(UserModel user)
-        {
-            var identity = (ClaimsIdentity)User.Identity;
-            IEnumerable<Claim> claims = identity.Claims;
-           
-            //adHelper.EditUser(user, currentUser);
-            return View("UsersList");
-        }
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
     }
 }

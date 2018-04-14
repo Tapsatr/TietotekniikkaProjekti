@@ -25,16 +25,22 @@ namespace TietotekniikkaProjekti.Controllers
             if (!adHelper.Authenticate(loginModel.UserName, loginModel.Password))
                 return View();
 
-            
 
-          
 
+            string role = "";
+            if (adHelper.isAdmin(loginModel.UserName))
+            {
+                role = "Administrator";
+            }
+            else
+            {
+                role = "User";
+            }
             // create claims
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, loginModel.UserName),
-                /*new Claim(ClaimTypes.Role, "Administrator"),*/
-                new Claim(ClaimTypes.Surname, loginModel.Password)
+                new Claim(ClaimTypes.Role, role)
 
             };
 
