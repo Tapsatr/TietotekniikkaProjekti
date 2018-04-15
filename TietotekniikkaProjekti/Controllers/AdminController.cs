@@ -30,11 +30,10 @@ namespace TietotekniikkaProjekti.Controllers
             //adHelper.CreateUserAccount("DC=ryhma1,DC=local", user);
             //adHelper.AddToGroup("CN=user, OU=USERS, DC=ryhma1, DC=local ", "CN=group,OU=GROUPS,DC=ryhma1,DC=local");
 
-            var success = adHelper.CreateUser(user);
+            
           
-
-            ViewBag.data = success;
-            return View();
+            TempData["Success"] = adHelper.CreateUser(user);
+            return Redirect("UsersList");
         }
         public IActionResult UsersList()
         {

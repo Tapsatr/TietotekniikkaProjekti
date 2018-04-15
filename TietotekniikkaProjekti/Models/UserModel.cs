@@ -15,6 +15,7 @@ namespace TietotekniikkaProjekti.Models
         [Required]
         [DataType(DataType.Password)]
         [StringLength(50 , MinimumLength = 7, ErrorMessage = "Password must be over 7 chars ")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$", ErrorMessage = "Password must have at least one uppercase letter and one number")]
         public string Password { get; set; }
         [Required]
         public string Nimi { get; set; }

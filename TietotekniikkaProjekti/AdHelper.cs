@@ -1,9 +1,13 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using TietotekniikkaProjekti.Models;
 
@@ -44,6 +48,7 @@ namespace TietotekniikkaProjekti
                     userName, password);
                 object nativeObject = entry.NativeObject;
                 authentic = true;
+                
             }
             catch (DirectoryServicesCOMException) { }
             return authentic;
@@ -154,8 +159,18 @@ namespace TietotekniikkaProjekti
                 newUser.Properties["mail"].Value = user.Email;
                 newUser.Properties["StreetAddress"].Value = user.Osoite;
                 newUser.Properties["employeeType"].Value = user.EmployeeType;
-
                 newUser.CommitChanges();
+
+                if (user.Enabled == true)
+                {
+                    int val = (int)newUser.Properties["userAccountControl"].Value;
+                    newUser.Properties["userAccountControl"].Value = val & ~0x2;
+                }
+                else
+                {
+                    int val = (int)newUser.Properties["userAccountControl"].Value;
+                    newUser.Properties["userAccountControl"].Value = val | 0x2;
+                }
 
 
                 newUser.Invoke("SetPassword", new object[] { user.Password });
@@ -225,6 +240,16 @@ namespace TietotekniikkaProjekti
                     de.Properties["mail"].Value = user.Email;
                     de.Properties["StreetAddress"].Value = user.Osoite;
                     de.Properties["employeeType"].Value = user.EmployeeType;
+                    if (user.Enabled == true)
+                    {
+                        int val = (int)de.Properties["userAccountControl"].Value;
+                        de.Properties["userAccountControl"].Value = val & ~0x2;
+                    }
+                    else
+                    {
+                        int val = (int)de.Properties["userAccountControl"].Value;
+                        de.Properties["userAccountControl"].Value = val | 0x2;
+                    }
                     //de.Properties["MemberOf"].Add(user.Group); 
                     de.CommitChanges();
                 }
@@ -236,6 +261,45 @@ namespace TietotekniikkaProjekti
             catch (System.DirectoryServices.DirectoryServicesCOMException ex)
             {
                 return "Failed to edit!";
+            }
+        }
+        public string EditPassword(string username, string oldpassword, string newpassword)
+        {
+            if(Authenticate(username, oldpassword))
+            {
+                try
+                {
+                    string filter = $"(&(objectClass=user)(sAMAccountName={username}))";
+
+                    DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
+                    directory.AuthenticationType = AuthenticationTypes.Secure;
+
+                    DirectorySearcher searcher = new DirectorySearcher(directory, filter);
+                    searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
+
+                    var result = searcher.FindOne();//put result if found
+                    DirectoryEntry de = null;
+
+                    if (null != result)
+                    {
+                        de = result.GetDirectoryEntry();
+                        de.Invoke("SetPassword", new object[] { newpassword });
+                        //de.Properties["LockOutTime"].Value = 0;
+                        de.Close();
+                    }
+
+                    searcher.Dispose();
+                    directory.Dispose();
+                    return "OK";
+                }
+                catch (System.DirectoryServices.DirectoryServicesCOMException ex)
+                {
+                    return "ERROR";
+                }
+            }
+            else
+            {
+                return "ERROR";
             }
         }
         private bool IsActive(DirectoryEntry de)
@@ -281,6 +345,28 @@ namespace TietotekniikkaProjekti
             searcher.Dispose();
             directory.Dispose();
             return false;
+        }
+        void sendMail(MailMessage message, string destination)
+        {
+            #region formatter
+            string text = string.Format("Please click on this link to {0}: {1}", message.Subject, message.Body);
+            string html = "Please confirm your account by clicking this link: <a href=\"" + message.Body + "\">link</a><br/>";
+
+            html += WebUtility.HtmlEncode(@"Or click on the copy the following link on the browser:" + message.Body);
+            #endregion
+
+            MailMessage msg = new MailMessage();
+            msg.From = new MailAddress("joe@contoso.com");
+            msg.To.Add(new MailAddress(destination));
+            msg.Subject = message.Subject;
+            msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(text, null, MediaTypeNames.Text.Plain));
+            msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(html, null, MediaTypeNames.Text.Html));
+
+            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", Convert.ToInt32(587));
+            System.Net.NetworkCredential credentials = new System.Net.NetworkCredential("joe@contoso.com", "XXXXXX");
+            smtpClient.Credentials = credentials;
+            smtpClient.EnableSsl = true;
+            smtpClient.Send(msg);
         }
     }
 }
