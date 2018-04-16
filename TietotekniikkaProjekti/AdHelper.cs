@@ -346,7 +346,7 @@ namespace TietotekniikkaProjekti
             directory.Dispose();
             return false;
         }
-        void sendMail(MailMessage message, string destination)
+        public void SendMail(MailMessage message, string destination)
         {
             #region formatter
             string text = string.Format("Please click on this link to {0}: {1}", message.Subject, message.Body);
@@ -355,16 +355,15 @@ namespace TietotekniikkaProjekti
             html += WebUtility.HtmlEncode(@"Or click on the copy the following link on the browser:" + message.Body);
             #endregion
 
-            MailMessage msg = new MailMessage();
-            msg.From = new MailAddress("joe@contoso.com");
-            msg.To.Add(new MailAddress(destination));
-            msg.Subject = message.Subject;
+            MailMessage msg = new MailMessage("vikkeongay@gay.gay",destination, text, html );
             msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(text, null, MediaTypeNames.Text.Plain));
             msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(html, null, MediaTypeNames.Text.Html));
 
-            SmtpClient smtpClient = new SmtpClient("smtp.gmail.com", Convert.ToInt32(587));
-            System.Net.NetworkCredential credentials = new System.Net.NetworkCredential("joe@contoso.com", "XXXXXX");
-            smtpClient.Credentials = credentials;
+
+            
+            SmtpClient smtpClient = new SmtpClient("projekti-postip.RYHMA1.LOCAL");
+
+
             smtpClient.EnableSsl = true;
             smtpClient.Send(msg);
         }

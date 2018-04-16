@@ -25,13 +25,6 @@ namespace TietotekniikkaProjekti.Controllers
         [HttpPost]
         public IActionResult AdminCreate(UserModel user)
         {
-            
-            // Rename("DC = ryhma1, DC = local", login.UserName, login.Password);
-            //adHelper.CreateUserAccount("DC=ryhma1,DC=local", user);
-            //adHelper.AddToGroup("CN=user, OU=USERS, DC=ryhma1, DC=local ", "CN=group,OU=GROUPS,DC=ryhma1,DC=local");
-
-            
-          
             TempData["Success"] = adHelper.CreateUser(user);
             return Redirect("UsersList");
         }

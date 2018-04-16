@@ -7,12 +7,23 @@ using Microsoft.AspNetCore.Mvc;
 using TietotekniikkaProjekti.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Identity;
+using TietotekniikkaProjekti.Services;
+using Microsoft.Extensions.Logging;
+using System.Net.Mail;
+using System;
 
 namespace TietotekniikkaProjekti.Controllers
 {
     [AllowAnonymous]
     public class AccountController : Controller
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailSender _emailSender;
+        private readonly ILogger _logger;
+        AdHelper adHelper = new AdHelper();
+
         public IActionResult Login()
         {
             return View();
@@ -21,7 +32,7 @@ namespace TietotekniikkaProjekti.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel loginModel)
         {
-            AdHelper adHelper = new AdHelper();
+           
             if (!adHelper.Authenticate(loginModel.UserName, loginModel.Password))
                 return View();
 
@@ -68,28 +79,125 @@ namespace TietotekniikkaProjekti.Controllers
             return RedirectToAction("Login");
         }
 
-        /*public async Task<ActionResult> ForgotPassword(UserModel model)
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPw()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ForgotPw(ForgotPasswordViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = await UserManager.FindByNameAsync(model.Email);
-                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
+
+                var ad = adHelper.GetAllUsers();
+
+                var user = ad.Find(x => x.Email.ToLower() == model.Email.ToLower());
+
+                if (user == null)
                 {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return View("ForgotPasswordConfirmation");
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                }
+                else
+                {
+                    MailMessage mail = new MailMessage
+
+                    {
+                        Subject = "mokkamoi!!",
+
+                        From = new MailAddress("vikke94@hotmail.com")
+
+                    };
+                    ApplicationUser userA = new ApplicationUser();
+
+                    userA.UserName = user.Username;
+                    // var code = await _userManager.GeneratePasswordResetTokenAsync(userA);
+                    Guid g = Guid.NewGuid();
+                    string GuidString = Convert.ToBase64String(g.ToByteArray());
+                    GuidString = GuidString.Replace("=", "");
+                    GuidString = GuidString.Replace("+", "");
+                    var callbackUrl = Url.ResetPasswordCallbackLink(user.Username, GuidString, Request.Scheme);
+
+                    mail.To.Add(user.Email);
+                    mail.Body = "Reset password link: " + callbackUrl;
+                    mail.IsBodyHtml = true;
+
+                    adHelper.SendMail(mail, user.Email);
                 }
 
-                var code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ResetPassword", "Account",
-            new { UserId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                await UserManager.SendEmailAsync(user.Id, "Reset Password",
-            "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
-                return View("ForgotPasswordConfirmation");
+                return RedirectToAction(nameof(ForgotPasswordConfirmation));
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
-        }*/
+            return View();
+        }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string code = null)
+        {
+            if (code == null)
+            {
+                throw new ApplicationException("A code must be supplied for password reset.");
+            }
+            var model = new ResetPasswordViewModel { Code = code };
+            return View(model);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public IActionResult ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            // var user = await _userManager.FindByEmailAsync(model.Email);
+
+            var ad = adHelper.GetAllUsers();
+
+            var user = ad.Find(x => x.Email.ToLower() == model.Email.ToLower());
+
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+            var result = adHelper.EditPassword(user.Username, user.Password, model.Password);
+            if (result.Equals("OK"))
+            {
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+            //AddErrors(result);
+            return View();
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
+        }
+
+
+        private void AddErrors(IdentityResult result)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+        }
     }
 }
