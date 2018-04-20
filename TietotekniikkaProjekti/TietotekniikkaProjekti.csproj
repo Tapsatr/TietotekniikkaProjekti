@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bytescout.Spreadsheet" Version="3.0.0.1700" />
+    <PackageReference Include="ExcelDataReader" Version="3.4.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.0.2" />
@@ -27,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\" />
     <Folder Include="System\Web\" />
     <Folder Include="Views\Shared\" />
     <Folder Include="wwwroot\css\" />

@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using TietotekniikkaProjekti.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using TietotekniikkaProjekti.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TietotekniikkaProjekti
 {
@@ -27,6 +29,8 @@ namespace TietotekniikkaProjekti
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<PassWordContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
 
 

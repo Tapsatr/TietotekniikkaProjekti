@@ -263,21 +263,23 @@ namespace TietotekniikkaProjekti
                 return "Failed to edit!";
             }
         }
-        public string EditPassword(string username, string oldpassword, string newpassword)
+        public string EditPassword(string username, string newpassword)
         {
-            if(Authenticate(username, oldpassword))
-            {
                 try
                 {
                     string filter = $"(&(objectClass=user)(sAMAccountName={username}))";
 
-                    DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
-                    directory.AuthenticationType = AuthenticationTypes.Secure;
+                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD)
+                {
+                    AuthenticationType = AuthenticationTypes.Secure
+                };//LDAP polku
 
-                    DirectorySearcher searcher = new DirectorySearcher(directory, filter);
-                    searcher.SearchScope = SearchScope.Subtree;//from what level of the branches are we looking from
+                DirectorySearcher searcher = new DirectorySearcher(directory, filter)
+                {
+                    SearchScope = SearchScope.Subtree//from what level of the branches are we looking from
+                };
 
-                    var result = searcher.FindOne();//put result if found
+                var result = searcher.FindOne();//put result if found
                     DirectoryEntry de = null;
 
                     if (null != result)
@@ -296,11 +298,7 @@ namespace TietotekniikkaProjekti
                 {
                     return "ERROR";
                 }
-            }
-            else
-            {
-                return "ERROR";
-            }
+            
         }
         private bool IsActive(DirectoryEntry de)
         {

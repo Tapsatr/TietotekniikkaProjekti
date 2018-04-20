@@ -1,0 +1,121 @@
+﻿@model IEnumerable<TietotekniikkaProjekti.Models.UserModel>
+@{
+    List<string> successList = ViewData["info"] as List<string>;
+}
+@{
+    ViewData["Title"] = "Add Multiple Users";
+}
+<h2>Add Multiple Users</h2>
+
+@if (Model == null)
+{
+<div class="col-md-7">
+    <form method="post" enctype="multipart/form-data" asp-controller="HR" asp-action="AddMultipleUsers">
+        <div class="form-group">
+            <div class="col-md-10">
+                <p>Upload one file using this form:</p>
+                <input type="file" name="files" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-10">
+                <input type="submit" value="Upload" class="btn btn-default" />
+            </div>
+        </div>
+    </form>
+    <div>
+        @if (successList != null)
+        {
+            <table>
+                <tr>
+                    <th>
+                        <p>Lisätty:</p>
+                    </th>
+                </tr>
+                @foreach (var success in successList)
+                {
+                    <tr>
+                        <th>
+                            @Html.DisplayFor(s => success)
+                        </th>
+                    </tr>
+                }
+            </table>
+        }
+    </div>
+</div>
+    }
+
+else if (Model != null)
+{
+    <form method="post" asp-controller="HR" asp-action="AddUsers">
+        <div class="form-group">
+            <div class="col-md-10">
+                <h2>Add new users from below?</h2>
+                <input type="submit" value="ADD" class="btn btn-default"/>
+            </div>
+        </div>
+    </form>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Username)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Password)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Nimi)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Sukunimi)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Osoite)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EmployeeType)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Enabled)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Username)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Password)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Nimi)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Sukunimi)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Osoite)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Email)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.EmployeeType)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Enabled)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

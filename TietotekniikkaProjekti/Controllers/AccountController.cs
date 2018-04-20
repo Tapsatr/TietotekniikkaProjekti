@@ -12,12 +12,23 @@ using TietotekniikkaProjekti.Services;
 using Microsoft.Extensions.Logging;
 using System.Net.Mail;
 using System;
+using TietotekniikkaProjekti.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace TietotekniikkaProjekti.Controllers
 {
     [AllowAnonymous]
     public class AccountController : Controller
     {
+
+        private readonly PassWordContext _context;
+        private const int PASSWORD_RESET_CODE_ALIVE_TIME = 12;
+        public AccountController(PassWordContext context)
+        {
+            _context = context;
+        }
+
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
@@ -28,11 +39,11 @@ namespace TietotekniikkaProjekti.Controllers
         {
             return View();
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel loginModel)
         {
-           
+
             if (!adHelper.Authenticate(loginModel.UserName, loginModel.Password))
                 return View();
 
@@ -67,7 +78,7 @@ namespace TietotekniikkaProjekti.Controllers
                     principal: principal);
 
             return RedirectToAction("Index", new RouteValueDictionary(
-          new { controller = "Home", action = "Index",  loginModel.UserName  }));
+          new { controller = "Home", action = "Index", loginModel.UserName }));
 
         }
 
@@ -122,8 +133,29 @@ namespace TietotekniikkaProjekti.Controllers
                     GuidString = GuidString.Replace("+", "");
                     var callbackUrl = Url.ResetPasswordCallbackLink(user.Username, GuidString, Request.Scheme);
 
+                    try
+                    {
+                        PasswordCode result = (from p in _context.PasswordCode
+                                               where p.Username == user.Username
+                                               select p).SingleOrDefault();
+                        if (result == null)//jos käyttäjä ei ole ennen tehnyt salasananpalautusta tehdään uusi passwordcode
+                        {
+                            result = new PasswordCode
+                            {
+                                Username = user.Username
+                            };
+                        }
+                        result.Code = GuidString;// tallennetaan käyttäjälle salasanan palautus tiedot
+                        result.IsUsed = false;
+                        result.TimeStamp = DateTime.Now;
+                        _context.Update(result);
+
+                        _context.SaveChanges();
+                    }
+                    catch (Exception) { }
+
                     mail.To.Add(user.Email);
-                    mail.Body = "Reset password link: " + callbackUrl;
+                    mail.Body = $"Reset password link: <a href=\"{callbackUrl}\">{callbackUrl}</a>";//tapsa on ****
                     mail.IsBodyHtml = true;
 
                     adHelper.SendMail(mail, user.Email);
@@ -169,13 +201,13 @@ namespace TietotekniikkaProjekti.Controllers
 
             var user = ad.Find(x => x.Email.ToLower() == model.Email.ToLower());
 
-            if (user == null)
+            if (user == null || !PasswordCodeValid(model.Code, user.Username))
             {
                 // Don't reveal that the user does not exist
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
             }
 
-            var result = adHelper.EditPassword(user.Username, user.Password, model.Password);
+            var result = adHelper.EditPassword(user.Username, model.Password);//???
             if (result.Equals("OK"))
             {
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
@@ -198,6 +230,28 @@ namespace TietotekniikkaProjekti.Controllers
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }
+        }
+        private bool PasswordCodeValid(string code, string username)
+        {
+            TimeSpan aliveTime = TimeSpan.FromHours(PASSWORD_RESET_CODE_ALIVE_TIME);
+            try
+            {
+                PasswordCode result = (from p in _context.PasswordCode
+                                       where p.Username == username
+                                       select p).SingleOrDefault();
+                if (result != null)
+                {
+                    if (result.Code == code && result.Username == username && result.IsUsed == false && DateTime.Now - result.TimeStamp < aliveTime)// oikea palautus koodi, username, voimassaolokoodi ja aika aloitusaika - nyt aika < olemassaoloaika
+                    {
+                        //var time = DateTime.Now - result.TimeStamp;
+                        result.IsUsed = true;//koodi käytetty
+                        _context.SaveChanges();
+                        return true;
+                    }
+                }
+            }
+            catch (Exception) { }
+            return false;
         }
     }
 }

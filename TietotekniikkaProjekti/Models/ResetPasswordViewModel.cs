@@ -15,6 +15,7 @@ namespace TietotekniikkaProjekti.Models
         [Required]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,30}$", ErrorMessage = "Password must have at least one uppercase letter and one number")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]

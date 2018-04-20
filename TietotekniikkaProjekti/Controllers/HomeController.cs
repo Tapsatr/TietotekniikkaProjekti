@@ -54,7 +54,7 @@ namespace TietotekniikkaProjekti.Controllers
         {
             string username = User.Identity.Name;
             string code = "";
-            code = adHelper.EditPassword(username, oldpassword, newpassword);
+            code = adHelper.EditPassword(username, newpassword);
             if(code == "OK")
             {
                 TempData["data"] = "Succesfully changed!";
