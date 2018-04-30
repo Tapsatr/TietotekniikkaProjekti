@@ -29,10 +29,6 @@ namespace TietotekniikkaProjekti.Controllers
             _context = context;
         }
 
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
-        private readonly ILogger _logger;
         AdHelper adHelper = new AdHelper();
 
         public IActionResult Login()
@@ -126,7 +122,6 @@ namespace TietotekniikkaProjekti.Controllers
                     ApplicationUser userA = new ApplicationUser();
 
                     userA.UserName = user.Username;
-                    // var code = await _userManager.GeneratePasswordResetTokenAsync(userA);
                     Guid g = Guid.NewGuid();
                     string GuidString = Convert.ToBase64String(g.ToByteArray());
                     GuidString = GuidString.Replace("=", "");
@@ -155,7 +150,7 @@ namespace TietotekniikkaProjekti.Controllers
                     catch (Exception) { }
 
                     mail.To.Add(user.Email);
-                    mail.Body = $"Reset password link: <a href=\"{callbackUrl}\">{callbackUrl}</a>";//tapsa on ****
+                    mail.Body = $"Reset password link: <a href=\"{callbackUrl}\">{callbackUrl}</a>";
                     mail.IsBodyHtml = true;
 
                     adHelper.SendMail(mail, user.Email);

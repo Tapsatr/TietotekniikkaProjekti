@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Bytescout.Spreadsheet;
 using TietotekniikkaProjekti.Models;
 using TietotekniikkaProjekti.Extensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TietotekniikkaProjekti.Controllers
 {
+    [Authorize(Roles = "HR")]
     public class HRController : Controller
     {
         AdHelper adHelper = new AdHelper();

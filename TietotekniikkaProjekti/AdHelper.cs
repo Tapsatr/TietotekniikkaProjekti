@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
+﻿using Justin.AspNetCore.LdapAuthentication;
+using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +16,8 @@ namespace TietotekniikkaProjekti
 {
     public class AdHelper
     {
-        private const string ADMIN_PASSWORD = "Qwerty12";
+       // private const string ADMIN_PASSWORD = "Qwerty12";
+      //  private const string LOGGED_USER = "Administrator";
         private const string LDAP_PATH = "CN=Users,DC=ryhma1,DC=local";
         public void AddToGroup(string userDn, string groupDn)
         {
@@ -146,7 +148,7 @@ namespace TietotekniikkaProjekti
             try
             {
    
-                DirectoryEntry directory = new DirectoryEntry("LDAP://CN=Users,DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
+                DirectoryEntry directory = new DirectoryEntry("LDAP://CN=Users,DC=ryhma1,DC=local");//LDAP polku
                 directory.AuthenticationType = AuthenticationTypes.Secure;
 
                 DirectoryEntry newUser = directory.Children.Add
@@ -223,7 +225,7 @@ namespace TietotekniikkaProjekti
             {
                 string filter = $"(&(objectClass=user)(sAMAccountName={user.Username}))";
 
-                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD);//LDAP polku
+                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local","Tuija", "SaLu1234");//LDAP polku
                 directory.AuthenticationType = AuthenticationTypes.Secure;
 
                 DirectorySearcher searcher = new DirectorySearcher(directory, filter);
@@ -249,8 +251,7 @@ namespace TietotekniikkaProjekti
                     {
                         int val = (int)de.Properties["userAccountControl"].Value;
                         de.Properties["userAccountControl"].Value = val | 0x2;
-                    }
-                    //de.Properties["MemberOf"].Add(user.Group); 
+                    } 
                     de.CommitChanges();
                 }
 
@@ -269,7 +270,7 @@ namespace TietotekniikkaProjekti
                 {
                     string filter = $"(&(objectClass=user)(sAMAccountName={username}))";
 
-                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", "Administrator", ADMIN_PASSWORD)
+                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local")
                 {
                     AuthenticationType = AuthenticationTypes.Secure
                 };//LDAP polku
@@ -356,11 +357,8 @@ namespace TietotekniikkaProjekti
             MailMessage msg = new MailMessage("vikkeongay@gay.gay",destination, text, html );
             msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(text, null, MediaTypeNames.Text.Plain));
             msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(html, null, MediaTypeNames.Text.Html));
-
-
             
             SmtpClient smtpClient = new SmtpClient("projekti-postip.RYHMA1.LOCAL");
-
 
             smtpClient.EnableSsl = true;
             smtpClient.Send(msg);
