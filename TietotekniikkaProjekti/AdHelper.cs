@@ -1,8 +1,10 @@
 ﻿using Justin.AspNetCore.LdapAuthentication;
+using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Configuration;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
@@ -11,35 +13,48 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Threading.Tasks;
 using TietotekniikkaProjekti.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace TietotekniikkaProjekti
 {
-    public class AdHelper
+    public class AdHelper 
     {
        // private const string ADMIN_PASSWORD = "Qwerty12";
       //  private const string LOGGED_USER = "Administrator";
         private const string LDAP_PATH = "CN=Users,DC=ryhma1,DC=local";
-        public void AddToGroup(string userDn, string groupDn)
+        private IConfiguration _Configuration;
+        public Admin _adminLogin = new Admin();
+        
+        public AdHelper(IConfiguration Configuration)
         {
-            try
-            {
-                DirectoryEntry dirEntry = new DirectoryEntry("LDAP://" + groupDn);
-                dirEntry.Properties["member"].Add(userDn);
-                dirEntry.CommitChanges();
-                dirEntry.Close();
-            }
-            catch (System.DirectoryServices.DirectoryServicesCOMException E)
-            {
-                //doSomething with E.Message.ToString();
+            _Configuration = Configuration;
+            _adminLogin.Username = _Configuration.GetSection("Admin").GetSection("Username").Value;
+            _adminLogin.Password = _Configuration.GetSection("Admin").GetSection("Password").Value;
 
-            }
         }
-        public static void Rename(string server, string userName, string password, string objectDn, string newName)
-        {
-            DirectoryEntry child = new DirectoryEntry("LDAP://" + server + "/" +
-                objectDn, userName, password);
-            child.Rename("CN=" + newName);
-        }
+
+
+        //public void AddToGroup(string userDn, string groupDn)
+        //{
+        //    try
+        //    {
+        //        DirectoryEntry dirEntry = new DirectoryEntry("LDAP://" + groupDn);
+        //        dirEntry.Properties["member"].Add(userDn);
+        //        dirEntry.CommitChanges();
+        //        dirEntry.Close();
+        //    }
+        //    catch (System.DirectoryServices.DirectoryServicesCOMException E)
+        //    {
+        //        //doSomething with E.Message.ToString();
+
+        //    }
+        //}
+        //public static void Rename(string server, string userName, string password, string objectDn, string newName)
+        //{
+        //    DirectoryEntry child = new DirectoryEntry("LDAP://" + server + "/" +
+        //        objectDn, userName, password);
+        //    child.Rename("CN=" + newName);
+        //}
 
         public bool Authenticate(string userName, string password)
         {
@@ -83,11 +98,12 @@ namespace TietotekniikkaProjekti
         public UserModel GetUserDetails(string username)
         {
 
+
             string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
 
             Console.WriteLine($"Searching {username}");
 
-            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local");//LDAP polku
+            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", _adminLogin.Username, _adminLogin.Password);//LDAP polku
             directory.AuthenticationType = AuthenticationTypes.Secure;
 
             DirectorySearcher searcher = new DirectorySearcher(directory, filter);
@@ -148,7 +164,7 @@ namespace TietotekniikkaProjekti
             try
             {
    
-                DirectoryEntry directory = new DirectoryEntry("LDAP://CN=Users,DC=ryhma1,DC=local");//LDAP polku
+                DirectoryEntry directory = new DirectoryEntry("LDAP://CN=Users,DC=ryhma1,DC=local", _adminLogin.Username,_adminLogin.Password);//LDAP polku
                 directory.AuthenticationType = AuthenticationTypes.Secure;
 
                 DirectoryEntry newUser = directory.Children.Add
@@ -225,7 +241,7 @@ namespace TietotekniikkaProjekti
             {
                 string filter = $"(&(objectClass=user)(sAMAccountName={user.Username}))";
 
-                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local","Tuija", "SaLu1234");//LDAP polku
+                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local",_adminLogin.Username, _adminLogin.Password);//LDAP polku
                 directory.AuthenticationType = AuthenticationTypes.Secure;
 
                 DirectorySearcher searcher = new DirectorySearcher(directory, filter);
@@ -270,7 +286,7 @@ namespace TietotekniikkaProjekti
                 {
                     string filter = $"(&(objectClass=user)(sAMAccountName={username}))";
 
-                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local")
+                DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", _adminLogin.Username, _adminLogin.Password)
                 {
                     AuthenticationType = AuthenticationTypes.Secure
                 };//LDAP polku
@@ -313,11 +329,12 @@ namespace TietotekniikkaProjekti
         public bool IsHR(string username)
         {
 
+
             string filter = $"(&(objectClass=user)(sAMAccountName={username}))";//$ puts allows to use username syntax
 
             Console.WriteLine($"Searching {username}");
 
-            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local");//LDAP polku
+            DirectoryEntry directory = new DirectoryEntry("LDAP://DC=ryhma1,DC=local", _adminLogin.Username, _adminLogin.Password);//LDAP polku
             directory.AuthenticationType = AuthenticationTypes.Secure;
 
             DirectorySearcher searcher = new DirectorySearcher(directory, filter);

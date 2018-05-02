@@ -15,6 +15,8 @@ using System;
 using TietotekniikkaProjekti.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace TietotekniikkaProjekti.Controllers
 {
@@ -22,14 +24,20 @@ namespace TietotekniikkaProjekti.Controllers
     public class AccountController : Controller
     {
 
+
         private readonly PassWordContext _context;
         private const int PASSWORD_RESET_CODE_ALIVE_TIME = 12;
-        public AccountController(PassWordContext context)
+        static private IConfiguration _Configuration;
+         private AdHelper adHelper;
+        public AccountController(PassWordContext context, IConfiguration Configuration)
         {
             _context = context;
+            _Configuration = Configuration;
+           
+             adHelper = new AdHelper(_Configuration);
         }
-
-        AdHelper adHelper = new AdHelper();
+        
+      
 
         public IActionResult Login()
         {

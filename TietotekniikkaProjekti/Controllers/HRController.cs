@@ -8,13 +8,22 @@ using Bytescout.Spreadsheet;
 using TietotekniikkaProjekti.Models;
 using TietotekniikkaProjekti.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace TietotekniikkaProjekti.Controllers
 {
     [Authorize(Roles = "HR")]
     public class HRController : Controller
     {
-        AdHelper adHelper = new AdHelper();
+        static private IConfiguration _Configuration;
+        private AdHelper adHelper;
+        public HRController(IConfiguration Configuration)
+        {
+            _Configuration = Configuration;
+
+            adHelper = new AdHelper(_Configuration);
+        }
         public IActionResult Index()
         {
             return View();

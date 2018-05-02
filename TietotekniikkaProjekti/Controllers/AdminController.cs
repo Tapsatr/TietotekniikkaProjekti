@@ -5,15 +5,23 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using TietotekniikkaProjekti.Extensions;
 using TietotekniikkaProjekti.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace TietotekniikkaProjekti.Controllers
 {
     [Authorize(Roles="Administrator")]
     public class AdminController : Controller
     {
-        AdHelper adHelper = new AdHelper();
+        static private IConfiguration _Configuration;
+        private AdHelper adHelper;
+        public AdminController(IConfiguration Configuration)
+        {
+            _Configuration = Configuration;
+             adHelper = new AdHelper(_Configuration);
+        }
         public IActionResult Index()
         {
             return View();  

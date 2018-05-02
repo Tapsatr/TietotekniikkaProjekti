@@ -7,13 +7,25 @@ using Microsoft.AspNetCore.Http;
 using TietotekniikkaProjekti.Extensions;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 namespace TietotekniikkaProjekti.Controllers
 {
     [Authorize]
     public class HomeController : Controller
     {
-        AdHelper adHelper = new AdHelper();
+
+
+        static private IConfiguration _Configuration;
+        private AdHelper adHelper;
+        public HomeController(IConfiguration Configuration)
+        {
+            _Configuration = Configuration;
+
+            adHelper = new AdHelper(_Configuration);
+        }
+
         public IActionResult Index()
         {
             string UserName = string.Empty;
