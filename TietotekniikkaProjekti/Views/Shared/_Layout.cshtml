@@ -34,6 +34,10 @@
                     {
                         <li><a asp-controller="Admin" asp-action="UsersList">Users</a></li>
                     }
+                    @if (User.IsInRole("HR"))
+                    {
+                        <li><a asp-controller="HR" asp-action="AddMultipleUsers">Add Users</a></li>
+                    }
                     @if (User.Claims.Any())
                     {
                         <li><a asp-controller="Home" asp-action="Edit">Edit your info</a></li>
