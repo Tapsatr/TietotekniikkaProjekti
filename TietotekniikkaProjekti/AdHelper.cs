@@ -354,7 +354,7 @@ namespace TietotekniikkaProjekti
             html += WebUtility.HtmlEncode(@"Or click on the copy the following link on the browser:" + message.Body);
             #endregion
 
-            MailMessage msg = new MailMessage("vikkeongay@gay.gay",destination, text, html );
+            MailMessage msg = new MailMessage("reset@dementia.com",destination, text, html );
             msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(text, null, MediaTypeNames.Text.Plain));
             msg.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(html, null, MediaTypeNames.Text.Html));
             
