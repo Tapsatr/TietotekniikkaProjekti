@@ -158,7 +158,7 @@ namespace TietotekniikkaProjekti.Controllers
                     catch (Exception) { }
 
                     mail.To.Add(user.Email);
-                    mail.Body = $"Reset password link: <a href=\"{callbackUrl}\">{callbackUrl}</a>";
+                    mail.Body = $"Reset password link: {callbackUrl}";
                     mail.IsBodyHtml = true;
 
                     adHelper.SendMail(mail, user.Email);
